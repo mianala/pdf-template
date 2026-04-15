@@ -2,6 +2,8 @@
 
 Zero-server PDF template engine with URL-encoded distribution. Create, share, and fill PDF templates entirely in the browser.
 
+**Live demo:** [mianala.github.io/pdf-template](https://mianala.github.io/pdf-template/)
+
 > Reference implementation for: *"The Code Revolution: How LLM-Driven Code Generation Is Democratizing Document Template Creation"* — Randriamanasina Mianala Loharano, University of Toamasina, April 2026.
 
 ## Features

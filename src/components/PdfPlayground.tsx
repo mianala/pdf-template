@@ -2,6 +2,7 @@ import { useState, useMemo, useCallback } from "react";
 import { extractVariables } from "../lib/variables";
 import PreviewPanel from "./PreviewPanel";
 import CodeEditor from "./CodeEditor";
+import ChatPanel from "./ChatPanel";
 
 interface PdfPlaygroundProps {
   code: string;
@@ -65,8 +66,13 @@ export default function PdfPlayground({
         </div>
 
         {leftTab === "code" && !readOnly && (
-          <div className="flex-1 overflow-auto flex flex-col">
-            <CodeEditor code={code} onChange={onCodeChange} />
+          <div className="flex-1 overflow-hidden flex flex-col min-h-0">
+            <div className="flex-1 min-h-0 overflow-auto">
+              <CodeEditor code={code} onChange={onCodeChange} />
+            </div>
+            <div className="h-2/5 min-h-50 shrink-0">
+              <ChatPanel code={code} onCodeChange={onCodeChange} />
+            </div>
           </div>
         )}
 
