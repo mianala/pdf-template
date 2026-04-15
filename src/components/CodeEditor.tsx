@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import type { Extension } from "@codemirror/state";
 
 export default function CodeEditor({
@@ -27,7 +27,7 @@ export default function CodeEditor({
       <textarea
         value={code}
         onChange={(e) => onChange(e.target.value)}
-        className="code-fallback"
+        className="w-full h-full bg-bg text-text-app border-0 p-3 font-mono text-[13px] resize-none outline-none"
         spellCheck={false}
       />
     );

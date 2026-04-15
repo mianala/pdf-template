@@ -12,6 +12,13 @@ import {
 
 type Mode = "create" | "fill";
 
+const btnBase =
+  "px-3.5 py-1.5 rounded-[6px] border text-[13px] font-medium cursor-pointer whitespace-nowrap transition-colors";
+const btnPrimary = `${btnBase} bg-primary border-primary text-white hover:bg-primary-hover`;
+const btnSecondary = `${btnBase} border-border-app bg-surface-2 text-text-app hover:border-[#444]`;
+const btnSmall =
+  "px-2.5 py-1 rounded-[6px] border border-border-app text-xs font-medium cursor-pointer whitespace-nowrap transition-colors bg-surface-2 text-text-app hover:border-[#444]";
+
 export default function App() {
   const [mode, setMode] = useState<Mode>("create");
   const [name, setName] = useState(DEFAULT_TEMPLATE_NAME);
@@ -21,7 +28,6 @@ export default function App() {
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
-  // Check URL for template on mount and on hash changes (Section 3.4)
   useEffect(() => {
     function loadFromHash() {
       const template = parseTemplateFromUrl();
@@ -72,11 +78,13 @@ export default function App() {
   }, []);
 
   return (
-    <div className="app">
-      {/* Header */}
-      <header className="header">
-        <div className="header-left">
-          <h1 className="logo" onClick={handleNewTemplate}>
+    <div className="flex flex-col h-full">
+      <header className="flex flex-col md:flex-row items-stretch md:items-center md:justify-between gap-2 md:gap-0 px-4 py-2 border-b border-border-app bg-surface shrink-0">
+        <div className="flex flex-col md:flex-row items-start md:items-center gap-1 md:gap-4">
+          <h1
+            className="text-base font-bold cursor-pointer whitespace-nowrap"
+            onClick={handleNewTemplate}
+          >
             PDF Template
           </h1>
           {mode === "create" && (
@@ -84,39 +92,40 @@ export default function App() {
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="name-input"
+              className="bg-surface-2 border border-border-app rounded-[6px] px-3 py-1.5 text-text-app text-sm w-full md:w-60"
               placeholder="Template name"
             />
           )}
-          {mode === "fill" && <span className="template-name">{name}</span>}
-        </div>
-        <div className="header-right">
           {mode === "fill" && (
-            <button className="btn btn-secondary" onClick={handleNewTemplate}>
+            <span className="text-sm text-text-muted">{name}</span>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          {mode === "fill" && (
+            <button className={btnSecondary} onClick={handleNewTemplate}>
               New Template
             </button>
           )}
-          <button className="btn btn-secondary" onClick={handleShare}>
+          <button className={btnSecondary} onClick={handleShare}>
             {copied ? "Copied!" : "Share URL"}
           </button>
-          <button className="btn btn-primary" onClick={handleDownload}>
+          <button className={btnPrimary} onClick={handleDownload}>
             Download PDF
           </button>
         </div>
       </header>
 
-      {/* Share URL display */}
       {shareUrl && (
-        <div className="share-bar">
+        <div className="flex items-center gap-2 px-4 py-2 bg-surface border-b border-border-app shrink-0">
           <input
             type="text"
             value={shareUrl}
             readOnly
-            className="share-input"
+            className="flex-1 bg-bg border border-border-app rounded-[6px] px-2.5 py-1.5 text-text-muted text-xs font-mono"
             onClick={(e) => (e.target as HTMLInputElement).select()}
           />
           <button
-            className="btn btn-small"
+            className={btnSmall}
             onClick={() => {
               navigator.clipboard.writeText(shareUrl);
               setCopied(true);
@@ -128,8 +137,7 @@ export default function App() {
         </div>
       )}
 
-      {/* Main content */}
-      <main className="main">
+      <main className="flex-1 overflow-hidden">
         <PdfPlayground
           code={code}
           onCodeChange={setCode}

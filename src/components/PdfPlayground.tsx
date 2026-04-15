@@ -11,6 +11,11 @@ interface PdfPlaygroundProps {
   readOnly?: boolean;
 }
 
+const tabBase =
+  "px-4 py-2 text-[13px] font-semibold bg-transparent border-0 cursor-pointer border-b-2 transition-colors";
+const tabInactive = `${tabBase} text-text-muted border-transparent hover:text-text-app`;
+const tabActive = `${tabBase} text-text-app border-primary bg-bg`;
+
 export default function PdfPlayground({
   code,
   onCodeChange,
@@ -40,20 +45,19 @@ export default function PdfPlayground({
   );
 
   return (
-    <div className="playground">
-      {/* Left: Code + Variables */}
-      <div className="playground-left">
-        <div className="tabs">
+    <div className="flex flex-col md:flex-row h-full w-full">
+      <div className="flex flex-col w-full h-1/2 md:w-1/2 md:h-full border-b md:border-b-0 md:border-r border-border-app">
+        <div className="flex border-b border-border-app bg-surface shrink-0">
           {!readOnly && (
             <button
-              className={`tab ${leftTab === "code" ? "tab-active" : ""}`}
+              className={leftTab === "code" ? tabActive : tabInactive}
               onClick={() => setLeftTab("code")}
             >
               Code
             </button>
           )}
           <button
-            className={`tab ${leftTab === "variables" ? "tab-active" : ""}`}
+            className={leftTab === "variables" ? tabActive : tabInactive}
             onClick={() => setLeftTab("variables")}
           >
             Fields ({variableNames.length})
@@ -61,23 +65,31 @@ export default function PdfPlayground({
         </div>
 
         {leftTab === "code" && !readOnly && (
-          <div className="tab-content">
+          <div className="flex-1 overflow-auto flex flex-col">
             <CodeEditor code={code} onChange={onCodeChange} />
           </div>
         )}
 
         {leftTab === "variables" && (
-          <div className="tab-content tab-content-padded">
+          <div className="flex-1 overflow-auto p-4">
             {variableNames.length === 0 ? (
-              <div className="variables-empty">
-                No variables found. Use <code>$("Field Name")</code> in your
-                code to create fillable fields.
+              <div className="p-8 text-center text-text-muted text-sm">
+                No variables found. Use{" "}
+                <code className="bg-surface-2 px-1.5 py-0.5 rounded text-xs">
+                  $("Field Name")
+                </code>{" "}
+                in your code to create fillable fields.
               </div>
             ) : (
-              <div className="variables-form">
+              <div className="flex flex-col gap-3.5">
                 {variableNames.map((name) => (
-                  <div key={name} className="variable-field">
-                    <label htmlFor={`var-${name}`}>{name}</label>
+                  <div key={name}>
+                    <label
+                      htmlFor={`var-${name}`}
+                      className="block text-xs font-semibold text-text-muted mb-1 uppercase tracking-wider"
+                    >
+                      {name}
+                    </label>
                     <textarea
                       id={`var-${name}`}
                       value={mergedVariables[name] ?? ""}
@@ -89,6 +101,7 @@ export default function PdfPlayground({
                           (mergedVariables[name]?.split("\n").length ?? 1) + 1
                         )
                       )}
+                      className="w-full bg-surface-2 border border-border-app rounded-[6px] px-2.5 py-2 text-text-app text-sm resize-y outline-none transition-colors focus:border-primary"
                     />
                   </div>
                 ))}
@@ -98,8 +111,7 @@ export default function PdfPlayground({
         )}
       </div>
 
-      {/* Right: PDF Preview */}
-      <div className="playground-right">
+      <div className="flex flex-col w-full h-1/2 md:w-1/2 md:h-full">
         <PreviewPanel code={code} variables={mergedVariables} />
       </div>
     </div>

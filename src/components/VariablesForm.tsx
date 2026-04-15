@@ -31,20 +31,28 @@ export default function VariablesForm({
 
   if (variableNames.length === 0) {
     return (
-      <div className="variables-empty">
-        No variables found. Use <code>$("Field Name")</code> in your code to
-        create fillable fields.
+      <div className="p-8 text-center text-text-muted text-sm">
+        No variables found. Use{" "}
+        <code className="bg-surface-2 px-1.5 py-0.5 rounded text-xs">
+          $("Field Name")
+        </code>{" "}
+        in your code to create fillable fields.
       </div>
     );
   }
 
   return (
-    <div className="variables-form">
+    <div className="flex flex-col gap-3.5">
       {variableNames.map((name) => {
         const value = mergedVariables[name] ?? "";
         return (
-          <div key={name} className="variable-field">
-            <label htmlFor={`var-${name}`}>{name}</label>
+          <div key={name}>
+            <label
+              htmlFor={`var-${name}`}
+              className="block text-xs font-semibold text-text-muted mb-1 uppercase tracking-wider"
+            >
+              {name}
+            </label>
             <textarea
               id={`var-${name}`}
               value={value}
@@ -53,6 +61,7 @@ export default function VariablesForm({
                 2,
                 Math.min(6, (value.split("\n").length ?? 1) + 1)
               )}
+              className="w-full bg-surface-2 border border-border-app rounded-[6px] px-2.5 py-2 text-text-app text-sm resize-y outline-none transition-colors focus:border-primary"
             />
           </div>
         );
