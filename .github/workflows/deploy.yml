@@ -26,7 +26,7 @@ jobs:
       - run: yarn install --frozen-lockfile
       - run: yarn build
         env:
-          VITE_CONVEX_URL: ${{ vars.VITE_CONVEX_URL }}
+          VITE_CONVEX_URL: ${{ secrets.VITE_CONVEX_URL }}
       - uses: actions/configure-pages@v5
         with:
           enablement: true
