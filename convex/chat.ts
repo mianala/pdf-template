@@ -45,7 +45,7 @@ export const editTemplate = httpAction(async (_ctx, request) => {
       "X-Title": "PDF Template",
     },
     body: JSON.stringify({
-      model: "deepseek/deepseek-chat-v3.1:free",
+      model: "qwen/qwen3-coder:free",
       response_format: { type: "json_object" },
       messages: [
         { role: "system", content: SYSTEM },
