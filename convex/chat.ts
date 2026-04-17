@@ -9,11 +9,10 @@ const SYSTEM = [
 ].join(" ");
 
 const MODELS = [
-  "qwen/qwen3-coder:free",
-  "google/gemma-4-31b-it:free",
   "nvidia/nemotron-3-super-120b-a12b:free",
-  "meta-llama/llama-3.3-70b-instruct:free",
-  "google/gemma-3-27b-it:free",
+  "google/gemma-4-26b-a4b-it:free",
+  "openai/gpt-oss-120b:free",
+  "minimax/minimax-m2.5:free",
 ];
 
 export const editTemplate = httpAction(async (_ctx, request) => {
@@ -92,12 +91,24 @@ export const editTemplate = httpAction(async (_ctx, request) => {
       console.log("Success with model:", model);
 
       const data = (await res.json()) as { choices: { message: { content: string } }[] };
-      const text = data.choices?.[0]?.message?.content ?? "";
+      let raw = data.choices?.[0]?.message?.content ?? "";
+
+      // Strip <think>...</think> blocks some models emit
+      raw = raw.replace(/<think>[\s\S]*?<\/think>/g, "").trim();
+
+      // Extract JSON if wrapped in markdown fences
+      const fenceMatch = raw.match(/```(?:json)?\s*([\s\S]*?)```/);
+      if (fenceMatch) raw = fenceMatch[1].trim();
+
       let parsed: { code: string; message: string };
       try {
-        parsed = JSON.parse(text);
+        parsed = JSON.parse(raw);
+        // Validate the code field isn't garbage
+        if (typeof parsed.code !== "string" || !parsed.code.includes("Document")) {
+          parsed = { code: currentCode, message: parsed.message ?? "Model returned invalid code, keeping original." };
+        }
       } catch {
-        parsed = { code: currentCode, message: text };
+        parsed = { code: currentCode, message: "Model returned unparseable response, keeping original." };
       }
 
       return new Response(JSON.stringify(parsed), {
