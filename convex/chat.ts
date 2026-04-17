@@ -10,7 +10,6 @@ const SYSTEM = [
 
 export const editTemplate = httpAction(async (_ctx, request) => {
   const allowed = process.env.ALLOWED_ORIGIN ?? "";
-  const origin = request.headers.get("origin") ?? "";
 
   const corsHeaders = {
     "Access-Control-Allow-Origin": allowed,
@@ -23,60 +22,69 @@ export const editTemplate = httpAction(async (_ctx, request) => {
     return new Response(null, { status: 204, headers: corsHeaders });
   }
 
+  const origin = request.headers.get("origin") ?? "";
   if (origin !== allowed) {
     return new Response(JSON.stringify({ error: "forbidden" }), {
       status: 403,
-      headers: { "Content-Type": "application/json" },
-    });
-  }
-
-  const { currentCode, instruction, history } = (await request.json()) as {
-    currentCode: string;
-    instruction: string;
-    history: { role: "user" | "assistant"; content: string }[];
-  };
-
-  const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
-      "Content-Type": "application/json",
-      "HTTP-Referer": allowed,
-      "X-Title": "PDF Template",
-    },
-    body: JSON.stringify({
-      model: "qwen/qwen3-coder:free",
-      response_format: { type: "json_object" },
-      messages: [
-        { role: "system", content: SYSTEM },
-        ...history,
-        {
-          role: "user",
-          content: `Current template code:\n\n\`\`\`tsx\n${currentCode}\n\`\`\`\n\nInstruction: ${instruction}`,
-        },
-      ],
-    }),
-  });
-
-  if (!res.ok) {
-    const text = await res.text();
-    return new Response(JSON.stringify({ error: `openrouter: ${res.status} ${text}` }), {
-      status: 502,
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
   }
 
-  const data = (await res.json()) as { choices: { message: { content: string } }[] };
-  const text = data.choices?.[0]?.message?.content ?? "";
-  let parsed: { code: string; message: string };
   try {
-    parsed = JSON.parse(text);
-  } catch {
-    parsed = { code: currentCode, message: text };
-  }
+    const { currentCode, instruction, history } = (await request.json()) as {
+      currentCode: string;
+      instruction: string;
+      history: { role: "user" | "assistant"; content: string }[];
+    };
 
-  return new Response(JSON.stringify(parsed), {
-    status: 200,
-    headers: { "Content-Type": "application/json", ...corsHeaders },
-  });
+    const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        "Content-Type": "application/json",
+        "HTTP-Referer": allowed,
+        "X-Title": "PDF Template",
+      },
+      body: JSON.stringify({
+        model: "qwen/qwen3-coder:free",
+        response_format: { type: "json_object" },
+        messages: [
+          { role: "system", content: SYSTEM },
+          ...history,
+          {
+            role: "user",
+            content: `Current template code:\n\n\`\`\`tsx\n${currentCode}\n\`\`\`\n\nInstruction: ${instruction}`,
+          },
+        ],
+      }),
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      return new Response(JSON.stringify({ error: `openrouter: ${res.status} ${text}` }), {
+        status: 502,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
+    const data = (await res.json()) as { choices: { message: { content: string } }[] };
+    const text = data.choices?.[0]?.message?.content ?? "";
+    let parsed: { code: string; message: string };
+    try {
+      parsed = JSON.parse(text);
+    } catch {
+      parsed = { code: currentCode, message: text };
+    }
+
+    return new Response(JSON.stringify(parsed), {
+      status: 200,
+      headers: { "Content-Type": "application/json", ...corsHeaders },
+    });
+  } catch (e: unknown) {
+    const message = e instanceof Error ? e.message : "Internal error";
+    return new Response(JSON.stringify({ error: message }), {
+      status: 500,
+      headers: { "Content-Type": "application/json", ...corsHeaders },
+    });
+  }
 });
